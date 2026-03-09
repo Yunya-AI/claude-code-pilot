@@ -2,6 +2,39 @@
 
 Claude Code 任务管理平台 - 通过 Web 界面管理和触发 Claude Code 任务。
 
+## 界面截图
+
+### 桌面端
+
+**首页**
+
+![首页](images/pc_home.png)
+
+**项目管理**
+
+![项目管理](images/pc_project_list.png)
+
+**任务列表**
+
+![任务列表](images/pc_task_list.png)
+
+**任务模板**
+
+![任务模板](images/pc_task_template.png)
+
+**任务详情**
+
+![任务详情](images/pc_task_detail.png)
+
+### 手机端
+
+界面支持响应式布局，手机浏览器可直接使用。在 iPhone 上可**添加到主屏幕**（Safari → 分享 → 添加到主屏幕），像原生应用一样使用。
+
+**任务列表** | **新建任务** | **任务详情**
+---|---|---
+
+![手机任务列表](images/mobile_task_list.jpg) | ![手机输入](images/mobile_task_input.jpg) | ![手机详情](images/mobile_task_detail.jpg)
+
 ## 功能特性
 
 - Web 触发 Claude Code 任务（后台启动）

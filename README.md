@@ -4,6 +4,39 @@ A web-based task management platform for [Claude Code](https://docs.anthropic.co
 
 [中文文档](docs/README.zh-CN.md)
 
+## Screenshots
+
+### Desktop
+
+**Home**
+
+![Home](docs/images/pc_home.png)
+
+**Projects**
+
+![Projects](docs/images/pc_project_list.png)
+
+**Tasks**
+
+![Tasks](docs/images/pc_task_list.png)
+
+**Templates**
+
+![Templates](docs/images/pc_task_template.png)
+
+**Task Detail**
+
+![Task Detail](docs/images/pc_task_detail.png)
+
+### Mobile
+
+The web app is responsive and works on mobile. On iPhone, you can **Add to Home Screen** (Safari → Share → Add to Home Screen) to use it like a native app.
+
+**Task List** | **New Task** | **Task Detail**
+---|---|---
+
+![Mobile Tasks](docs/images/mobile_task_list.jpg) | ![Mobile Input](docs/images/mobile_task_input.jpg) | ![Mobile Detail](docs/images/mobile_task_detail.jpg)
+
 ## Features
 
 - Web-triggered Claude Code tasks (background execution)
