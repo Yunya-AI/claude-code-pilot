@@ -4,6 +4,10 @@ A web-based task management platform for [Claude Code](https://docs.anthropic.co
 
 [中文文档](docs/README.zh-CN.md)
 
+## Overview
+
+![Overview](docs/images/overview.png)
+
 ## Screenshots
 
 ### Mobile

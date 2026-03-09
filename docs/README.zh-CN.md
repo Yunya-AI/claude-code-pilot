@@ -2,6 +2,10 @@
 
 Claude Code 任务管理平台 - 通过 Web 界面管理和触发 Claude Code 任务。
 
+## 架构概览
+
+![概览](images/overview.png)
+
 ## 界面截图
 
 ### 手机端
