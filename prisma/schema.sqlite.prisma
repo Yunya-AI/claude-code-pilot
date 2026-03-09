@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// 项目表
+model Project {
+  id          Int       @id @default(autoincrement())
+  name        String
+  path        String
+  description String?
+  createTime  DateTime  @default(now()) @map("create_time")
+  updateTime  DateTime  @updatedAt @map("update_time")
+  tasks       Task[]
+
+  @@map("projects")
+}
+
+// 任务表
+model Task {
+  id         Int        @id @default(autoincrement())
+  projectId  Int        @map("project_id")
+  prompt     String
+  templateId Int?       @map("template_id")
+  status     TaskStatus @default(PENDING)
+  sessionId  String?    @map("session_id")
+  output     String?
+  textOutput String?    @map("text_output")
+  startedAt  DateTime?  @map("started_at")
+  finishedAt DateTime?  @map("finished_at")
+  createTime DateTime   @default(now()) @map("create_time")
+  updateTime DateTime   @updatedAt @map("update_time")
+  project    Project    @relation(fields: [projectId], references: [id])
+  template   Template?  @relation(fields: [templateId], references: [id])
+
+  @@index([projectId])
+  @@index([status])
+  @@map("tasks")
+}
+
+// 模板表
+model Template {
+  id          Int      @id @default(autoincrement())
+  name        String
+  prompt      String
+  description String?
+  createTime  DateTime @default(now()) @map("create_time")
+  updateTime  DateTime @updatedAt @map("update_time")
+  tasks       Task[]
+
+  @@map("templates")
+}
+
+enum TaskStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  STOPPED
+  DELETED
+}

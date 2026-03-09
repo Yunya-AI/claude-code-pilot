@@ -1,0 +1,20 @@
+services:
+  app:
+    build: .
+    ports:
+      - "3040:3040"   # Next.js
+      - "3041:3041"   # Socket.io
+    environment:
+      - DATABASE_URL=file:./data/claude_code_pilot.db
+      - JWT_SECRET=${JWT_SECRET:-change-in-production}
+      - AUTH_PASSWORD=${AUTH_PASSWORD:-admin123}
+      - PORT=3040
+      - SOCKET_PORT=3041
+      - CORS_ORIGIN=http://localhost:3040
+    volumes:
+      # 持久化 SQLite 数据
+      - app-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  app-data:

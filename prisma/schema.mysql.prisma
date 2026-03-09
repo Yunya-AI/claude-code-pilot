@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// 项目表
+model Project {
+  id          Int       @id @default(autoincrement())
+  name        String    @db.VarChar(100)
+  path        String    @db.VarChar(500)
+  description String?   @db.Text
+  createTime  DateTime  @default(now()) @map("create_time")
+  updateTime  DateTime  @updatedAt @map("update_time")
+  tasks       Task[]
+
+  @@map("projects")
+}
+
+// 任务表
+model Task {
+  id         Int        @id @default(autoincrement())
+  projectId  Int        @map("project_id")
+  prompt     String     @db.Text
+  templateId Int?       @map("template_id")
+  status     TaskStatus @default(PENDING)
+  sessionId  String?    @db.VarChar(36) @map("session_id")
+  output     String?    @db.LongText
+  textOutput String?    @db.LongText @map("text_output")
+  startedAt  DateTime?  @map("started_at")
+  finishedAt DateTime?  @map("finished_at")
+  createTime DateTime   @default(now()) @map("create_time")
+  updateTime DateTime   @updatedAt @map("update_time")
+  project    Project    @relation(fields: [projectId], references: [id])
+  template   Template?  @relation(fields: [templateId], references: [id])
+
+  @@index([projectId])
+  @@index([status])
+  @@map("tasks")
+}
+
+// 模板表
+model Template {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(100)
+  prompt      String   @db.Text
+  description String?  @db.Text
+  createTime  DateTime @default(now()) @map("create_time")
+  updateTime  DateTime @updatedAt @map("update_time")
+  tasks       Task[]
+
+  @@map("templates")
+}
+
+enum TaskStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  STOPPED
+  DELETED
+}
