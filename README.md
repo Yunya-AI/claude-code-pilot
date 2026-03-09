@@ -1,151 +1,144 @@
 # Claude Code Pilot
 
-Claude Code 任务管理平台 - 通过 Web 界面管理和触发 Claude Code 任务。
+A web-based task management platform for [Claude Code](https://docs.anthropic.com/en/docs/claude-code/overview) — manage and trigger Claude Code tasks via a web UI with real-time terminal output.
 
-## 功能特性
+[中文文档](docs/README.zh-CN.md)
 
-- Web 触发 Claude Code 任务（后台启动）
-- Web 终端显示（xterm.js 实时流式输出 + 交互输入）
-- 项目管理、历史记录、任务模板
-- 简单密码认证
-- SQLite / MySQL 数据存储（默认 SQLite，零配置）
+## Features
 
-## 技术栈
+- Web-triggered Claude Code tasks (background execution)
+- Web terminal with xterm.js (real-time streaming output + interactive input)
+- Project management, task history, and prompt templates
+- Simple password authentication
+- SQLite / MySQL support (SQLite by default, zero-config)
 
-- **前端**: Next.js 14 (App Router) + React 18 + TypeScript
-- **样式**: Tailwind CSS + shadcn/ui
-- **终端**: xterm.js + node-pty
-- **实时通信**: Socket.io (WebSocket)
-- **数据库**: SQLite（默认）/ MySQL + Prisma ORM
-- **认证**: 简单密码 + JWT
+## Tech Stack
 
-## 快速开始
+- **Frontend**: Next.js 15 (App Router) + React 19 + TypeScript
+- **Styling**: Tailwind CSS + shadcn/ui
+- **Terminal**: xterm.js + node-pty
+- **Realtime**: Socket.io (WebSocket)
+- **Database**: SQLite (default) / MySQL + Prisma ORM
+- **Auth**: Password + JWT
 
-### 1. 安装依赖
+## Quick Start
+
+### 1. Install dependencies
 
 ```bash
 pnpm install
 ```
 
-### 2. 配置环境变量
+### 2. Configure environment
 
-复制 `.env.example` 为 `.env` 并修改配置：
+Copy `.env.example` to `.env` and adjust:
 
 ```env
-# 数据库配置（默认 SQLite，无需额外服务）
+# Database (SQLite by default, no extra service needed)
 # SQLite: file:./data/claude_code_pilot.db
 # MySQL: mysql://root:password@localhost:3306/claude_code_pilot
 DATABASE_URL="file:./data/claude_code_pilot.db"
 
-# JWT 密钥
+# JWT secret
 JWT_SECRET="your-super-secret-jwt-key-change-in-production"
 
-# 管理员密码
+# Admin password
 AUTH_PASSWORD="admin123"
 
-# 服务端口
-PORT=3000
-SOCKET_PORT=3001
+# Ports
+PORT=3040
+SOCKET_PORT=3041
 ```
 
-### 3. 初始化数据库
-
-执行（SQLite 会自动创建 data 目录和数据库文件）：
+### 3. Initialize database
 
 ```bash
 pnpm db:push
 ```
 
-### 4. 启动服务
+SQLite will auto-create the `data/` directory and database file.
+
+### 4. Start dev server
 
 ```bash
-# 同时启动 Next.js 和 Socket.io 服务
 pnpm dev
 ```
 
-服务启动后：
-- Web 界面: http://localhost:3000
-- Socket.io 服务: http://localhost:3001
+- Web UI: http://localhost:3040
+- Socket.io: http://localhost:3041
 
-### 5. 登录
+### 5. Login
 
-使用配置的 `AUTH_PASSWORD` 密码登录（默认为 `admin123`）。
+Use the configured `AUTH_PASSWORD` (default: `admin123`).
 
-## Docker 部署
+## Docker
 
 ```bash
-# 构建并启动（默认 SQLite）
 docker compose up -d
-
-# 访问 http://localhost:3040
 ```
 
-环境变量可通过 `.env` 或 `docker compose` 的 `environment` 覆盖。数据持久化在 `app-data` volume。
+Access at http://localhost:3040. Override env via `.env` or `docker compose` `environment`. Data persists in `app-data` volume.
 
-## 生产环境启动
+## Production
 
 ```bash
 pnpm build
-# 方式一：单命令启动（concurrently）
+# Option 1: Single command
 pnpm start:all
 
-# 方式二：PM2 守护进程
+# Option 2: PM2
 pm2 start ecosystem.config.cjs
 ```
 
-## 使用说明
+## Usage
 
-### 项目管理
+### Projects
 
-1. 进入「项目管理」页面
-2. 点击「新建项目」
-3. 填写项目名称和路径（必须是有效的本地项目路径）
+1. Go to **Projects**
+2. Create a project with name and local path
 
-### 任务模板
+### Templates
 
-1. 进入「任务模板」页面
-2. 创建常用的提示词模板，方便复用
+1. Go to **Templates**
+2. Create reusable prompt templates
 
-### 运行任务
+### Run tasks
 
-1. 进入「任务记录」页面
-2. 点击「新建任务」
-3. 选择项目和提示词
-4. 点击「启动任务」
-5. 在任务详情页面查看实时终端输出
+1. Go to **Tasks**
+2. Create a task, select project and prompt
+3. Start the task and view real-time output in the terminal
 
-## 项目结构
+## Project structure
 
 ```
-claude_code_pilot/
+claude-code-pilot/
 ├── src/
 │   ├── app/                      # Next.js App Router
 │   │   ├── api/                  # API Routes
-│   │   ├── (auth)/               # 认证相关页面
-│   │   └── (dashboard)/          # 主应用页面
-│   ├── components/               # React 组件
-│   │   ├── ui/                   # shadcn/ui 组件
-│   │   ├── terminal/             # 终端组件
-│   │   └── layout/               # 布局组件
-│   ├── lib/                      # 工具库
-│   │   ├── db.ts                 # Prisma 客户端
-│   │   ├── auth.ts               # 认证工具
-│   │   └── claude-runner.ts      # Claude Code 进程管理
-│   ├── hooks/                    # 自定义 Hooks
-│   └── types/                    # TypeScript 类型
+│   │   ├── (auth)/               # Auth pages
+│   │   └── (dashboard)/         # Main app
+│   ├── components/               # React components
+│   │   ├── ui/                   # shadcn/ui
+│   │   ├── terminal/             # xterm.js terminal
+│   │   └── layout/               # Layout components
+│   ├── lib/                      # Utilities
+│   │   ├── db.ts                 # Prisma client
+│   │   ├── auth.ts               # Auth helpers
+│   │   └── claude-runner.ts      # Claude Code process manager
+│   └── types/                    # TypeScript types
 ├── prisma/
-│   ├── schema.sqlite.prisma      # SQLite schema（默认）
+│   ├── schema.sqlite.prisma      # SQLite schema (default)
 │   └── schema.mysql.prisma       # MySQL schema
 ├── socket/
-│   └── server.ts                 # WebSocket 服务
+│   └── server.ts                 # WebSocket server
 └── package.json
 ```
 
-## 注意事项
+## Prerequisites
 
-### Claude Code CLI 安装
+### Claude Code CLI
 
-运行任务前需安装 [Claude Code](https://docs.anthropic.com/en/docs/claude-code/overview) 并在 PATH 中可用：
+Install [Claude Code](https://docs.anthropic.com/en/docs/claude-code/overview) and ensure it's in your PATH:
 
 **macOS / Linux:**
 ```bash
@@ -157,15 +150,15 @@ curl -fsSL https://claude.ai/install.sh | bash
 irm https://claude.ai/install.ps1 | iex
 ```
 
-**验证:** `claude --version`
+Verify: `claude --version`
 
-首次运行会打开浏览器进行 OAuth 认证（需 Claude Pro/Max 订阅）。
+First run opens the browser for OAuth (Claude Pro/Max subscription required).
 
-### 其他
+### Other
 
-1. 项目路径必须是服务器可以访问的有效路径
-2. node-pty 需要编译，确保系统有 python3、make、g++（Docker 镜像已包含）
-3. Windows 用户可设置 `SHELL_PATH` 指定 shell（如 PowerShell 路径），默认使用 cmd.exe
+- Project paths must be valid and accessible on the server
+- node-pty requires build tools (python3, make, g++) — Docker image includes them
+- Windows: set `SHELL_PATH` for PowerShell if needed; defaults to cmd.exe
 
 ## License
 
