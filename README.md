@@ -32,10 +32,18 @@ A web-based task management platform for [Claude Code](https://docs.anthropic.co
 
 The web app is responsive and works on mobile. On iPhone, you can **Add to Home Screen** (Safari → Share → Add to Home Screen) to use it like a native app.
 
-**Task List** | **New Task** | **Task Detail**
----|---|---
-
-![Mobile Tasks](docs/images/mobile_task_list.jpg) | ![Mobile Input](docs/images/mobile_task_input.jpg) | ![Mobile Detail](docs/images/mobile_task_detail.jpg)
+<table>
+<tr>
+<td><img src="docs/images/mobile_task_list.jpg" width="200" alt="Task List"></td>
+<td><img src="docs/images/mobile_task_input.jpg" width="200" alt="New Task"></td>
+<td><img src="docs/images/mobile_task_detail.jpg" width="200" alt="Task Detail"></td>
+</tr>
+<tr>
+<td align="center">Task List</td>
+<td align="center">New Task</td>
+<td align="center">Task Detail</td>
+</tr>
+</table>
 
 ## Features
 
