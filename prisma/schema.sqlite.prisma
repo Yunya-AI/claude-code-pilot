@@ -27,6 +27,7 @@ model Task {
   prompt     String
   templateId Int?       @map("template_id")
   status     TaskStatus @default(PENDING)
+  runnerType RunnerType @default(CLAUDE) @map("runner_type")
   sessionId  String?    @map("session_id")
   output     String?
   textOutput String?    @map("text_output")
@@ -62,4 +63,9 @@ enum TaskStatus {
   FAILED
   STOPPED
   DELETED
+}
+
+enum RunnerType {
+  CLAUDE
+  CODEX
 }

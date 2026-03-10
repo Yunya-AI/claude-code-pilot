@@ -9,7 +9,9 @@ function stripAnsi(s: string): string {
   return s.replace(ANSI_RE, "");
 }
 
-// Claude Code 进程管理器
+type RunnerType = "CLAUDE" | "CODEX";
+
+// 进程管理器（支持 Claude Code 和 Codex）
 class ClaudeRunner {
   private processes: Map<number, pty.IPty> = new Map();
   private io: SocketServer | null = null;
@@ -17,12 +19,15 @@ class ClaudeRunner {
   private outputBuffers: Map<number, string> = new Map();
   // 记录已手动停止的任务，防止 onExit 用 FAILED 覆盖 STOPPED 状态
   private stoppedTasks: Set<number> = new Set();
+  // 是否将输出持久化到数据库（SAVE_OUTPUT=false 时禁用）
+  private readonly saveOutput: boolean = process.env.SAVE_OUTPUT !== "false";
 
   setIO(io: SocketServer) {
     this.io = io;
   }
 
   private scheduleSave(taskId: number) {
+    if (!this.saveOutput) return;
     if (this.saveTimers.has(taskId)) return;
     const timer = setTimeout(async () => {
       this.saveTimers.delete(taskId);
@@ -86,7 +91,7 @@ class ClaudeRunner {
     return { shell: "/bin/zsh", args: ["-l", "-c"] };
   }
 
-  private spawnClaude(cmd: string, cwd: string, env: Record<string, string>): pty.IPty {
+  private spawnProcess(cmd: string, cwd: string, env: Record<string, string>): pty.IPty {
     const { shell, args } = this.getShellConfig();
     const spawnArgs = [...args, cmd];
     const ptyProcess = pty.spawn(shell, spawnArgs, {
@@ -96,8 +101,29 @@ class ClaudeRunner {
       cwd,
       env,
     });
-    console.log(`[ClaudeRunner] claude 进程已创建, pid=${ptyProcess.pid}`);
+    console.log(`[ClaudeRunner] 进程已创建, pid=${ptyProcess.pid}`);
     return ptyProcess;
+  }
+
+  /** 构建 Claude Code 命令 */
+  private buildClaudeCmd(prompt: string, sessionId: string): string {
+    const escapedPrompt = prompt.replace(/'/g, "'\\''");
+    const allowedTools = [
+      "'Bash(*)'",
+      "'Read(*)'",
+      "'Edit(*)'",
+      "'Write(*)'",
+      "'Glob(*)'",
+      "'Grep(*)'",
+      "'MultiEdit(*)'",
+    ].join(" ");
+    return `claude --session-id ${sessionId} --allowedTools ${allowedTools} -- '${escapedPrompt}'`;
+  }
+
+  /** 构建 Codex 命令 */
+  private buildCodexCmd(prompt: string): string {
+    const escapedPrompt = prompt.replace(/"/g, '\\"');
+    return `codex "${escapedPrompt}"`;
   }
 
   private attachProcess(taskId: number, ptyProcess: pty.IPty, initialOutput: string) {
@@ -138,8 +164,9 @@ class ClaudeRunner {
           data: {
             status: finalStatus,
             finishedAt: new Date(),
-            output: outputBuffer,
-            textOutput: stripAnsi(outputBuffer),
+            ...(this.saveOutput
+              ? { output: outputBuffer, textOutput: stripAnsi(outputBuffer) }
+              : {}),
           },
         });
       } catch (e) {
@@ -170,33 +197,31 @@ class ClaudeRunner {
       return false;
     }
 
-    console.log(`[ClaudeRunner] 启动 claude 进程, cwd=${task.project.path}`);
+    const runnerType: RunnerType = (task.runnerType as RunnerType) || "CLAUDE";
+    console.log(`[ClaudeRunner] 启动 ${runnerType} 进程, cwd=${task.project.path}`);
 
     try {
       const env = this.buildEnv();
 
-      // 生成并保存 session ID，后续可用 --resume 恢复
-      const sessionId = randomUUID();
-      const escapedPrompt = task.prompt.replace(/'/g, "'\\''");
-      const allowedTools = [
-        "'Bash(*)'",
-        "'Read(*)'",
-        "'Edit(*)'",
-        "'Write(*)'",
-        "'Glob(*)'",
-        "'Grep(*)'",
-        "'MultiEdit(*)'",
-      ].join(" ");
-      const cmd = `claude --session-id ${sessionId} --allowedTools ${allowedTools} -- '${escapedPrompt}'`;
+      let cmd: string;
+      let sessionId: string | undefined;
+
+      if (runnerType === "CODEX") {
+        cmd = this.buildCodexCmd(task.prompt);
+      } else {
+        // 生成并保存 session ID，后续可用 --resume 恢复
+        sessionId = randomUUID();
+        cmd = this.buildClaudeCmd(task.prompt, sessionId);
+      }
 
       console.log(`[ClaudeRunner] 执行命令: ${cmd}`);
       console.log(`[ClaudeRunner] PATH=${env.PATH}`);
 
-      const ptyProcess = this.spawnClaude(cmd, task.project.path, env);
+      const ptyProcess = this.spawnProcess(cmd, task.project.path, env);
 
       await prisma.task.update({
         where: { id: taskId },
-        data: { status: "RUNNING", startedAt: new Date(), sessionId },
+        data: { status: "RUNNING", startedAt: new Date(), ...(sessionId ? { sessionId } : {}) },
       });
 
       this.attachProcess(taskId, ptyProcess, task.output || "");
@@ -251,14 +276,14 @@ class ClaudeRunner {
       this.stoppedTasks.add(taskId);
       ptyProcess.kill();
 
-      const finalOutput = this.outputBuffers.get(taskId) || "";
-
       await prisma.task.update({
         where: { id: taskId },
         data: {
           status: "STOPPED",
           finishedAt: new Date(),
-          output: finalOutput,
+          ...(this.saveOutput
+            ? { output: this.outputBuffers.get(taskId) || "" }
+            : {}),
         },
       });
 
@@ -321,7 +346,7 @@ class ClaudeRunner {
 
       console.log(`[ClaudeRunner] 执行命令: ${cmd}`);
 
-      const ptyProcess = this.spawnClaude(cmd, task.project.path, env);
+      const ptyProcess = this.spawnProcess(cmd, task.project.path, env);
 
       await prisma.task.update({
         where: { id: taskId },

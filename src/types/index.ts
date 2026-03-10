@@ -11,6 +11,9 @@ export interface Project {
 // 任务状态
 export type TaskStatus = 'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'STOPPED' | 'DELETED';
 
+// Runner 类型
+export type RunnerType = 'CLAUDE' | 'CODEX';
+
 // 任务类型
 export interface Task {
   id: number;
@@ -18,6 +21,7 @@ export interface Task {
   prompt: string;
   templateId: number | null;
   status: TaskStatus;
+  runnerType: RunnerType;
   sessionId: string | null;
   output: string | null;
   startedAt: Date | null;

@@ -59,12 +59,13 @@ const createTaskSchema = z.object({
   projectId: z.number().int().positive("项目ID无效"),
   prompt: z.string().min(1, "提示词不能为空"),
   templateId: z.number().int().positive().optional(),
+  runnerType: z.enum(["CLAUDE", "CODEX"]).optional().default("CLAUDE"),
 });
 
 async function createTask(request: NextRequest) {
   try {
     const body = await request.json();
-    const { projectId, prompt, templateId } = createTaskSchema.parse(body);
+    const { projectId, prompt, templateId, runnerType } = createTaskSchema.parse(body);
 
     // 检查项目是否存在
     const project = await prisma.project.findUnique({
@@ -84,6 +85,7 @@ async function createTask(request: NextRequest) {
         projectId,
         prompt,
         templateId,
+        runnerType,
         status: "PENDING",
       },
       include: {

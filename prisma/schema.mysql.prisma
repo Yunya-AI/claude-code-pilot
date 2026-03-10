@@ -27,6 +27,7 @@ model Task {
   prompt     String     @db.Text
   templateId Int?       @map("template_id")
   status     TaskStatus @default(PENDING)
+  runnerType RunnerType @default(CLAUDE) @map("runner_type")
   sessionId  String?    @db.VarChar(36) @map("session_id")
   output     String?    @db.LongText
   textOutput String?    @db.LongText @map("text_output")
@@ -62,4 +63,9 @@ enum TaskStatus {
   FAILED
   STOPPED
   DELETED
+}
+
+enum RunnerType {
+  CLAUDE
+  CODEX
 }

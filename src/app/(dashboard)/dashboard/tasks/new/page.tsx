@@ -16,7 +16,9 @@ import {
 } from "@/components/ui/select";
 import { ArrowLeft, Play } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Project, Template } from "@/types";
+import { Project, Template, RunnerType } from "@/types";
+
+const RUNNER_TYPE_KEY = "last_runner_type";
 
 export default function NewTaskPage() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -25,6 +27,12 @@ export default function NewTaskPage() {
   const [projectId, setProjectId] = useState<string>("");
   const [templateId, setTemplateId] = useState<string>("");
   const [prompt, setPrompt] = useState("");
+  const [runnerType, setRunnerType] = useState<RunnerType>(() => {
+    if (typeof window !== "undefined") {
+      return (localStorage.getItem(RUNNER_TYPE_KEY) as RunnerType) || "CLAUDE";
+    }
+    return "CLAUDE";
+  });
   const router = useRouter();
   const { toast } = useToast();
 
@@ -79,6 +87,7 @@ export default function NewTaskPage() {
 
     setLoading(true);
     const token = localStorage.getItem("auth_token");
+    localStorage.setItem(RUNNER_TYPE_KEY, runnerType);
 
     try {
       const response = await fetch("/api/tasks", {
@@ -91,6 +100,7 @@ export default function NewTaskPage() {
           projectId: parseInt(projectId, 10),
           prompt,
           templateId: templateId ? parseInt(templateId, 10) : undefined,
+          runnerType,
         }),
       });
 
@@ -158,11 +168,24 @@ export default function NewTaskPage() {
             </div>
 
             <div className="space-y-2">
+              <Label>执行引擎</Label>
+              <Select value={runnerType} onValueChange={(val) => setRunnerType(val as RunnerType)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="CLAUDE">Claude Code</SelectItem>
+                  <SelectItem value="CODEX">Codex</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
               <Label>提示词 *</Label>
               <Textarea
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                placeholder="输入 Claude Code 要执行的提示词..."
+                placeholder={runnerType === "CODEX" ? "输入 Codex 要执行的提示词..." : "输入 Claude Code 要执行的提示词..."}
                 className="min-h-40 font-mono"
                 required
               />
