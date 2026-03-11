@@ -144,6 +144,8 @@ export function XTermTerminal({ taskId, token, onFinished }: XTermTerminalProps)
         });
         const json = await res.json();
         if (json.success && json.data?.output) {
+          // fit 后再写入，避免宽度不对导致换行错乱
+          fitAddon.fit();
           term.write(json.data.output);
         }
       } catch {}

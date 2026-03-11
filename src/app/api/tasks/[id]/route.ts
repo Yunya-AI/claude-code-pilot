@@ -10,6 +10,8 @@ type TaskDetail = {
   prompt: string;
   templateId: number | null;
   status: string;
+  runnerType: string;
+  sessionId: string | null;
   output: string | null;
   startedAt: Date | null;
   finishedAt: Date | null;
@@ -23,7 +25,19 @@ async function getTask(request: NextRequest, context: { params: Promise<{ id: st
   const { id } = await context.params;
   const task = await prisma.task.findFirst({
     where: { id: parseInt(id, 10), status: { not: "DELETED" } },
-    include: {
+    select: {
+      id: true,
+      projectId: true,
+      prompt: true,
+      templateId: true,
+      status: true,
+      runnerType: true,
+      sessionId: true,
+      output: true,
+      startedAt: true,
+      finishedAt: true,
+      createTime: true,
+      updateTime: true,
       project: { select: { id: true, name: true, path: true } },
       template: { select: { id: true, name: true } },
     },

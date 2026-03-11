@@ -305,8 +305,18 @@ NGINX_CONF_DST="/ai/opt/nginx/conf/sites/${PROJECT_NAME}.conf"
 
 if [[ -f "$NGINX_CONF_SRC" ]]; then
     sudo mkdir -p "$(dirname "$NGINX_CONF_DST")"
-    sudo cp "$NGINX_CONF_SRC" "$NGINX_CONF_DST"
-    print_success "Nginx 配置已复制到 $NGINX_CONF_DST"
+    # 替换占位符后写入目标文件
+    SERVER_NAME="${SERVER_NAME:-localhost}"
+    sed "s/NEXT_PORT_PLACEHOLDER/${NEXT_PORT}/g; s/SOCKET_PORT_PLACEHOLDER/${SOCKET_PORT}/g; s/SERVER_NAME_PLACEHOLDER/${SERVER_NAME}/g" \
+        "$NGINX_CONF_SRC" | sudo tee "$NGINX_CONF_DST" > /dev/null
+    print_success "Nginx 配置已写入 $NGINX_CONF_DST (Next=${NEXT_PORT}, Socket=${SOCKET_PORT}, ServerName=${SERVER_NAME})"
+
+    # 提前创建配置中引用的日志目录，避免 nginx -t 报错
+    for log_dir in $(grep -oP '(?<=access_log|error_log)\s+\K[^\s;]+' "$NGINX_CONF_DST" | xargs -I{} dirname {}); do
+        if [[ "$log_dir" != "." ]]; then
+            sudo mkdir -p "$log_dir"
+        fi
+    done
 
     NGINX_BIN=$(command -v nginx 2>/dev/null || echo "/ai/opt/nginx/sbin/nginx")
     print_info "测试 Nginx 配置..."

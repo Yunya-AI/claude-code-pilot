@@ -5,14 +5,14 @@ import prisma from "@/lib/db";
 import { startTaskViaSocket } from "@/lib/socket-client";
 import { ApiResponse, PaginatedResponse } from "@/types";
 
-// 任务列表项类型（用于前端展示）
+// 任务列表项类型（用于前端展示，不含大字段 output/textOutput）
 type TaskListItem = {
   id: number;
   projectId: number;
   prompt: string;
   templateId: number | null;
   status: string;
-  output: string | null;
+  runnerType: string;
   startedAt: Date | null;
   finishedAt: Date | null;
   createTime: Date;
@@ -40,7 +40,17 @@ async function getTasks(request: NextRequest) {
       skip: (page - 1) * pageSize,
       take: pageSize,
       orderBy: { createTime: "desc" },
-      include: {
+      select: {
+        id: true,
+        projectId: true,
+        prompt: true,
+        templateId: true,
+        status: true,
+        runnerType: true,
+        startedAt: true,
+        finishedAt: true,
+        createTime: true,
+        updateTime: true,
         project: { select: { id: true, name: true, path: true } },
         template: { select: { id: true, name: true } },
       },

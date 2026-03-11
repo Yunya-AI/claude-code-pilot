@@ -33,17 +33,12 @@ export default function TaskDetailPage() {
   const taskId = parseInt(params.id as string, 10);
   const [task, setTask] = useState<Task | null>(null);
   const [loading, setLoading] = useState(true);
-  const [token, setToken] = useState<string>("");
+  const [token] = useState<string>(() =>
+    typeof window !== "undefined" ? (localStorage.getItem("auth_token") ?? "") : ""
+  );
   const [infoExpanded, setInfoExpanded] = useState(false);
   const [processDeadDialog, setProcessDeadDialog] = useState(false);
   const { toast } = useToast();
-
-  useEffect(() => {
-    const savedToken = localStorage.getItem("auth_token");
-    if (savedToken) {
-      setToken(savedToken);
-    }
-  }, []);
 
   const fetchTask = async () => {
     try {
